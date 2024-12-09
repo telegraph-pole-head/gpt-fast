@@ -31,6 +31,8 @@ torch._functorch.config.enable_autograd_cache = True
 
 default_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+create_block_mask = torch.compile(create_block_mask)
+
 # support running without installing as a package
 wd = Path(__file__).parent.parent.resolve()
 sys.path.append(str(wd))
