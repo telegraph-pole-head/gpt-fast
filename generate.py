@@ -67,7 +67,7 @@ def causal_mask(b, h, q, kv):
 
 def prefill(model: Transformer, x: torch.Tensor, input_pos: torch.Tensor, **sampling_kwargs) -> torch.Tensor:
     # input_pos: [B, S]
-    mask = create_block_mask(causal_mask, 1, 1, input_pos.shape[0], model.max_seq_length, device="cuda")
+    mask = create_block_mask(causal_mask, 1, 1, input_pos.shape[0], model.max_seq_length, device=x.device)
     logits = model(mask, x, input_pos)
     return sample(logits, **sampling_kwargs)[0]
 
@@ -77,11 +77,12 @@ def decode_one_token(model: Transformer, x: torch.Tensor, input_pos: torch.Tenso
     block_index = input_pos // block_mask.BLOCK_SIZE[0]
     mask = block_mask[:, :, block_index]
     mask.mask_mod = block_mask.mask_mod
+    mask.seq_lengths = (1, model.max_seq_length)
     logits = model(mask, x, input_pos)
     return sample(logits, **sampling_kwargs)
 
 def decode_n_tokens(model: Transformer, cur_token: torch.Tensor, input_pos: torch.Tensor, num_new_tokens: int, callback=lambda _: _, **sampling_kwargs):
-    block_mask = create_block_mask(causal_mask, 1, 1, model.max_seq_length, model.max_seq_length, device="cuda")
+    block_mask = create_block_mask(causal_mask, 1, 1, model.max_seq_length, model.max_seq_length, device=cur_token.device)
     new_tokens, new_probs = [], []
     for i in range(num_new_tokens):
         next_token, next_prob = decode_one_token(
