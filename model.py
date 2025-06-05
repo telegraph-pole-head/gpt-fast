@@ -12,8 +12,8 @@ import torch.nn as nn
 from torch import Tensor
 from torch.nn import functional as F
 from torch.nn.attention.flex_attention import (
-    _mask_mod_signature,
     BlockMask,
+    _mask_mod_signature,
     flex_attention,
 )
 
@@ -66,7 +66,7 @@ class ModelArgs:
         if len(config) > 1:
             config.sort(key=len, reverse=True)
             assert len(config[0]) != len(config[1]), name # make sure only one 'best' match
-            
+
         return cls(**transformer_configs[config[0]])
 
 
