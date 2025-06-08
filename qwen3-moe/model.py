@@ -271,7 +271,7 @@ class MOEFeedForward(nn.Module):
         self.num_activated_experts = config.num_activated_experts
 
     def forward(self, x: Tensor) -> Tensor:
-        original_shape = x.shape
+        # original_shape = x.shape
         x = x.view(-1, self.dim)
         # T = num_tokens, E = num_experts, D = hidden dim, A = activated experts
         # x: [T, D]
@@ -280,12 +280,12 @@ class MOEFeedForward(nn.Module):
         expert_weights, expert_indices = torch.topk(
             expert_weights, self.num_activated_experts, dim=-1
         )  # [T, A], [T, A]
-        # Qwen3 normalizes topk probabilities
         expert_weights /= expert_weights.sum(dim=-1, keepdim=True)  # [T, A]
         expert_weights = expert_weights.to(x.dtype)
         expert_outs = self.cond_ffn(x, expert_indices)
-        result = torch.einsum("tai,ta -> ti", expert_outs, expert_weights)
-        return result.view(original_shape)
+        return torch.einsum("tai,ta -> ti", expert_outs, expert_weights)
+        # result = torch.einsum("tai,ta -> ti", expert_outs, expert_weights)
+        # return result.view(original_shape)
 
 
 class RMSNorm(nn.Module):
